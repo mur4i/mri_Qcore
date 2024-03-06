@@ -1,8 +1,8 @@
 Citizen.CreateThread(function() 
     while mriQ.Framework == nil do
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             mriQ.Framework = exports["es_extended"]:getSharedObject()
-        else if Config.Framework == 'QB' then
+        else if config.Framework == 'QB' then
                 mriQ.Framework = exports["qb-core"]:GetCoreObject()
             end
         end

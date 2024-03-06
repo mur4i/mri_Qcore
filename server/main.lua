@@ -9,11 +9,11 @@ mriQ.MySQL = {
     Sync = {}
 }
 
-mriQ.RegisterServerCallback = function(name, func) 
+mriQ.RegisterServerCallback = function(name, func)
     mriQ.Callbacks[name] = func
 end
 
-mriQ.TriggerCallback = function(name, source, payload, cb) 
+mriQ.TriggerCallback = function(name, source, payload, cb)
     if not cb then 
         cb = function() end
     end
@@ -27,29 +27,29 @@ mriQ.Log = function(str)
     print("[\x1b[44mmri_Qcore\x1b[0m]: " .. str)
 end
 
-mriQ.MySQL.Async.Fetch = function(query, variables, cb) 
-    if not cb or type(cb) ~= 'function' then 
+mriQ.MySQL.Async.Fetch = function(query, variables, cb)
+    if not cb or type(cb) ~= 'function' then
         cb = function() end
     end
 
-    if Config.MySQL == 'mysql-async' then
-        return exports["mysql-async"]:mysql_fetch_all(query, variables, cb) 
-    elseif Config.MySQL == 'oxmysql' then
-        return exports["oxmysql"]:prepare(query, variables, cb) 
+    if config.MySQL == 'mysql-async' then
+        return exports["mysql-async"]:mysql_fetch_all(query, variables, cb)
+    elseif config.MySQL == 'oxmysql' then
+        return exports["oxmysql"]:prepare(query, variables, cb)
     end
 end
 
-mriQ.MySQL.Sync.Fetch = function(query, variables) 
+mriQ.MySQL.Sync.Fetch = function(query, variables)
     local result = {}
     local finishedQuery = false
-    local cb = function(r) 
+    local cb = function(r)
         result = r
         finishedQuery = true
     end
 
-    if Config.MySQL == 'mysql-async' then
-        exports["mysql-async"]:mysql_fetch_all(query, variables, cb) 
-    elseif Config.MySQL == 'oxmysql' then
+    if config.MySQL == 'mysql-async' then
+        exports["mysql-async"]:mysql_fetch_all(query, variables, cb)
+    elseif config.MySQL == 'oxmysql' then
         exports["oxmysql"]:execute(query, variables, cb)
     end
 
@@ -60,15 +60,15 @@ mriQ.MySQL.Sync.Fetch = function(query, variables)
     return result
 end
 
-mriQ.MySQL.Async.Execute = function(query, variables, cb) 
-    if Config.MySQL == 'mysql-async' then
-        return exports["mysql-async"]:mysql_execute(query, variables, cb) 
-    elseif Config.MySQL == 'oxmysql' then
+mriQ.MySQL.Async.Execute = function(query, variables, cb)
+    if config.MySQL == 'mysql-async' then
+        return exports["mysql-async"]:mysql_execute(query, variables, cb)
+    elseif config.MySQL == 'oxmysql' then
         return exports["oxmysql"]:update(query, variables, cb)
     end
 end
 
-mriQ.MySQL.Sync.Execute = function(query, variables) 
+mriQ.MySQL.Sync.Execute = function(query, variables)
     local result = {}
     local finishedQuery = false
     local cb = function(r) 
@@ -76,9 +76,9 @@ mriQ.MySQL.Sync.Execute = function(query, variables)
         finishedQuery = true
     end
 
-    if Config.MySQL == 'mysql-async' then
-        exports["mysql-async"]:mysql_execute(query, variables, cb) 
-    elseif Config.MySQL == 'oxmysql' then
+    if config.MySQL == 'mysql-async' then
+        exports["mysql-async"]:mysql_execute(query, variables, cb)
+    elseif config.MySQL == 'oxmysql' then
         exports["oxmysql"]:execute(query, variables, cb)
     end
 
@@ -89,19 +89,20 @@ mriQ.MySQL.Sync.Execute = function(query, variables)
     return result
 end
 
-mriQ.IsPlayerAvailable = function(source) 
+mriQ.IsPlayerAvailable = function(source)
     local available = false
+    local identifier = mriQ.GetPlayerIdentifier(source)
 
-    if type(source) == 'number' then 
-        if Config.Framework == 'ESX' then
+    if type(source) == 'number' then
+        if config.Framework == 'ESX' then
             available = mriQ.Framework.GetPlayerFromId(source) ~= nil
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             available = mriQ.Framework.Functions.GetPlayer(source) ~= nil
         end
     elseif type(source) == 'string' then
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             available = mriQ.Framework.GetPlayerFromIdentifier(identifier) ~= nil
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             available = mriQ.Framework.Functions.GetSource(identifier) ~= nil
         end
     end
@@ -111,10 +112,10 @@ end
 
 mriQ.GetPlayerIdentifier = function(source)
     if mriQ.IsPlayerAvailable(source) then
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             local xPlayer = mriQ.Framework.GetPlayerFromId(source)
             return xPlayer.getIdentifier()
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             return mriQ.Framework.Functions.GetIdentifier(source, 'license')
         end
     else
@@ -129,7 +130,7 @@ mriQ.CreatePlayer = function(xPlayer)
         return nil
     end
 
-    if Config.Framework == 'ESX' then 
+    if config.Framework == 'ESX' then 
         player.name = xPlayer.getName()
         player.accounts = {}
         for _,v in ipairs(xPlayer.getAccounts()) do 
@@ -162,7 +163,7 @@ mriQ.CreatePlayer = function(xPlayer)
             xPlayer.removeAccountMoney('bank', amount) 
         end
         player.removeMoney = xPlayer.removeMoney
-    elseif Config.Framework == 'QB' then
+    elseif config.Framework == 'QB' then
         player.name = xPlayer.PlayerData.charinfo.firstname .. " " .. xPlayer.PlayerData.charinfo.lastname
         player.accounts = {
             bank =  xPlayer.PlayerData.money.bank,
@@ -206,9 +207,9 @@ mriQ.GetPlayer = function(source)
     if mriQ.IsPlayerAvailable(source) then 
         local xPlayer = nil
 
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             xPlayer = mriQ.Framework.GetPlayerFromId(source)
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             xPlayer = mriQ.Framework.Functions.GetPlayer(source)
         end
 
@@ -222,9 +223,9 @@ mriQ.GetPlayerFromIdentifier = function(identifier)
     if mriQ.IsPlayerAvailable(identifier) then 
         local xPlayer = nil
 
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             xPlayer = mriQ.Framework.GetPlayerFromIdentifier(identifier)
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             xPlayer = mriQ.Framework.Functions.GetPlayer(mriQ.Framework.Functions.GetSource(identifier))
         end
 
@@ -241,7 +242,7 @@ mriQ.GetAllVehicles = function(force)
 
     local vehicles = {}
 
-    if Config.Framework == 'ESX' then
+    if config.Framework == 'ESX' then
         local data = mriQ.MySQL.Sync.Fetch("SELECT * FROM vehicles", {})
 
         for k, v in ipairs(data) do 
@@ -253,7 +254,7 @@ mriQ.GetAllVehicles = function(force)
             }
         end
         
-    elseif Config.Framework == 'QB' then 
+    elseif config.Framework == 'QB' then 
         for k,v in pairs(mriQ.Framework.Shared.Vehicles) do
             vehicles[k] = {
                 model = k,
@@ -304,7 +305,7 @@ mriQ.GetPlayerVehicles = function(source)
         local vehicles = mriQ.GetAllVehicles(false)
         local playerVehicles = {}
 
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             local data = mriQ.MySQL.Sync.Fetch("SELECT * FROM owned_vehicles WHERE owner = @identifier", { ["@identifier"] = identifier })
 
             for k,v in ipairs(data) do
@@ -331,7 +332,7 @@ mriQ.GetPlayerVehicles = function(source)
                     garage = v.garage or nil
                 })
             end
-        elseif Config.Framework == 'QB'  then
+        elseif config.Framework == 'QB'  then
             local data = mriQ.MySQL.Sync.Fetch("SELECT * FROM player_vehicles WHERE license = @identifier", { ["@identifier"] = identifier })
 
             for k,v in ipairs(data) do
@@ -379,9 +380,9 @@ mriQ.UpdatePlayerVehicle = function(source, plate, vehicleData)
         end
 
         local query = nil
-        if Config.Framework == 'ESX' then
+        if config.Framework == 'ESX' then
             query = "UPDATE owned_vehicles SET vehicle = @props, stored = @stored, garage = @garage WHERE owner = @identifier AND plate = @plate"
-        elseif Config.Framework == 'QB' then
+        elseif config.Framework == 'QB' then
             query = "UPDATE player_vehicles SET mods = @props, stored = @stored, garage = @garage WHERE license = @identifier AND plate = @plate"
         end
 
@@ -412,9 +413,9 @@ mriQ.UpdateVehicleOwner = function(plate, target)
     end
 
     local query = nil
-    if Config.Framework == 'ESX' then
+    if config.Framework == 'ESX' then
         query = "UPDATE owned_vehicles SET owner = @newOwner WHERE plate = @plate" 
-    elseif Config.Framework == 'QB' then
+    elseif config.Framework == 'QB' then
         query = "UPDATE player_vehicles SET license = @newOwner WHERE plate = @plate"
     end
 
